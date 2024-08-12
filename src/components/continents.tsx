@@ -1,50 +1,43 @@
-// src/components/Continents.tsx
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
+import { Bar } from 'react-chartjs-2'
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
+import { useNavigate } from 'react-router-dom'
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
-// Registra els components de Chart.js necessaris
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-// Defineix una interfície per al tipus de dades que esperem de l'API
 interface Country {
-  name: string;
-  population: number;
-  region: string;
+  name: string
+  population: number
+  region: string
 }
 
 interface PopulationByContinent {
-  [key: string]: number;
+  [key: string]: number
 }
 
 const Continents: React.FC = () => {
-  const [populations, setPopulations] = useState<PopulationByContinent>({});
+  const [populations, setPopulations] = useState<PopulationByContinent>({})
+  const navigate = useNavigate()
 
   useEffect(() => {
-    // Crida a l'API per obtenir totes les dades dels països
     axios.get<Country[]>('https://restcountries.com/v2/all')
       .then(response => {
-        const data = response.data;
-        console.log(data)
-
-        // Agrupa la població per continent
+        const data = response.data
+        
         const populationByContinent = data.reduce((acc: PopulationByContinent, country: Country) => {
-          const continent = country.region;
+          const continent = country.region
           if (continent) {
-            acc[continent] = (acc[continent] || 0) + country.population;
+            acc[continent] = (acc[continent] || 0) + country.population
           }
-          return acc;
-        }, {});
+          return acc
+        }, {})
 
-        // Estableix les dades agrupades en l'estat
-        setPopulations(populationByContinent);
+        setPopulations(populationByContinent)
       })
-      .catch(error => console.error('Error fetching countries:', error));
-  }, []);
+      .catch(error => console.error('Error fetching countries:', error))
+  }, [])
 
-  // Prepara les dades per a la gràfica
   const data = {
     labels: Object.keys(populations),
     datasets: [
@@ -56,14 +49,13 @@ const Continents: React.FC = () => {
         borderWidth: 1,
       },
     ],
-  }
+  };
 
   const options = {
     scales: {
       y: {
         beginAtZero: true,
         ticks: {
-          // Formateja els valors com a milions amb un decimal
           callback: function(value: number | string) {
             return `${value} B`;
           }
@@ -78,17 +70,30 @@ const Continents: React.FC = () => {
       tooltip: {
         callbacks: {
           label: function(tooltipItem: any) {
-            return `${tooltipItem.raw.toFixed(1)} B habitants`;
+            return `${tooltipItem.raw.toFixed(1)} B inhabitants`;
           }
         }
       }
+    },
+    onClick: (event: any) => {
+      const chart = event.chart;
+      const elements = chart.getElementsAtEventForMode(event.native, 'nearest', { intersect: true }, true);
+
+      if (elements.length) {
+        const index = elements[0].index;
+        const continent = data.labels[index];
+        navigate(`/countries/${continent}`);
+      }
     }
-  }
+  };
 
   return (
     <div>
       <h1>Population by Continent</h1>
-      <Bar data={data} options={options} />
+      <Bar 
+        data={data} 
+        options={options} 
+      />
     </div>
   );
 };
