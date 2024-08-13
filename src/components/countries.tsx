@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 import { Bar } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -18,10 +17,15 @@ const Countries: React.FC = () => {
   const navigate = useNavigate()
   
   useEffect(() => {
-    axios.get<Country[]>('https://restcountries.com/v2/all')
+    fetch('https://restcountries.com/v2/all')
       .then(response => {
-        const data = response.data
-        const filteredCountries = data.filter(country => country.region === continent)
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        return response.json()
+      })
+      .then(data => {
+        const filteredCountries = data.filter((country: Country) => country.region === continent)
         setCountries(filteredCountries)
       })
       .catch(error => console.error('Error fetching countries:', error))
@@ -38,7 +42,7 @@ const Countries: React.FC = () => {
         borderWidth: 1,
       },
     ],
-  };
+  }
 
   const options = {
     scales: {
@@ -64,7 +68,7 @@ const Countries: React.FC = () => {
         }
       }
     }
-  };
+  }
 
   return (
     <div>
@@ -72,7 +76,7 @@ const Countries: React.FC = () => {
       <button onClick={() => navigate('/')}>Back to Continents</button>
       <Bar data={data} options={options} />
     </div>
-  );
-};
+  )
+}
 
 export default Countries

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 import { Bar } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
 import { useNavigate } from 'react-router-dom'
+import Range from './range'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
@@ -21,10 +21,15 @@ const Continents: React.FC = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    axios.get<Country[]>('https://restcountries.com/v2/all')
+    fetch('https://restcountries.com/v2/all')
       .then(response => {
-        const data = response.data
-        
+        console.log(response)
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json()
+      })
+      .then(data => {
         const populationByContinent = data.reduce((acc: PopulationByContinent, country: Country) => {
           const continent = country.region
           if (continent) {
@@ -32,7 +37,7 @@ const Continents: React.FC = () => {
           }
           return acc
         }, {})
-
+  
         setPopulations(populationByContinent)
       })
       .catch(error => console.error('Error fetching countries:', error))
@@ -49,7 +54,7 @@ const Continents: React.FC = () => {
         borderWidth: 1,
       },
     ],
-  };
+  }
 
   const options = {
     scales: {
@@ -70,26 +75,27 @@ const Continents: React.FC = () => {
       tooltip: {
         callbacks: {
           label: function(tooltipItem: any) {
-            return `${tooltipItem.raw.toFixed(1)} B inhabitants`;
+            return `${tooltipItem.raw.toFixed(1)} B inhabitants`
           }
         }
       }
     },
     onClick: (event: any) => {
       const chart = event.chart;
-      const elements = chart.getElementsAtEventForMode(event.native, 'nearest', { intersect: true }, true);
+      const elements = chart.getElementsAtEventForMode(event.native, 'nearest', { intersect: true }, true)
 
       if (elements.length) {
-        const index = elements[0].index;
-        const continent = data.labels[index];
-        navigate(`/countries/${continent}`);
+        const index = elements[0].index
+        const continent = data.labels[index]
+        navigate(`/countries/${continent}`)
       }
     }
-  };
+  }
 
   return (
     <div>
       <h1>Population by Continent</h1>
+      <Range min={5.99} max={19.99} />
       <Bar 
         data={data} 
         options={options} 
