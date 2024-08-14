@@ -4,10 +4,11 @@ import { Alert } from '@mui/material'
 interface RangeProps {
   min: number
   max: number
+  onRangeChange: (min: number, max: number) => void
 }
 
-const Range: React.FC<RangeProps> = ({ min, max }) => {
-  const [range, setRange] = useState({ min: min + (max - min) * 0.25, max: min + (max - min) * 0.75 })
+const Range: React.FC<RangeProps> = ({ min, max, onRangeChange }) => {
+  const [range, setRange] = useState({ min: min, max: max })
   const [dragging, setDragging] = useState<'min' | 'max' | null>(null)
   const rangeRef = useRef<HTMLDivElement>(null)
   const [hover, setHover] = useState<null | 'min' | 'max'>(null)
@@ -32,22 +33,22 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
   // Selection values control
   const change = useCallback(
     (clientX: number, type: 'min' | 'max') => {
-      if (!rangeRef.current) return;
+      if (!rangeRef.current) return
   
-      const rect = rangeRef.current.getBoundingClientRect();
-      const x = clientX - rect.left; // x position within the element
-      const width = rect.right - rect.left;
-      const percentage = (x / width) * 100;
-      let value = getValue(percentage);
+      const rect = rangeRef.current.getBoundingClientRect()
+      const x = clientX - rect.left // x position within the element
+      const width = rect.right - rect.left
+      const percentage = (x / width) * 100
+      let value = getValue(percentage)
 
       // Limit the value to the min and max
-      value = Math.max(minValue, Math.min(maxValue, value));
+      value = Math.max(minValue, Math.min(maxValue, value))
   
       setRange((prev) =>
         type === 'min'
           ? { ...prev, min: Math.min(value, prev.max) }
           : { ...prev, max: Math.max(value, prev.min) }
-      );
+      )
     },
     [minValue, maxValue]
   )
@@ -55,7 +56,7 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (dragging) {
-        change(e.clientX, dragging);
+        change(e.clientX, dragging)
       }
     },
     [dragging, change]
@@ -64,66 +65,70 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
   const handleMouseMoveDocument = useCallback(
     (e: MouseEvent) => {
       if (dragging) {
-        change(e.clientX, dragging);
+        change(e.clientX, dragging)
       }
     },
     [dragging, change]
   )
 
   const handleMouseUp = useCallback(() => {
-    setDragging(null);
+    setDragging(null)
   }, [])
 
   useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMoveDocument);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMoveDocument)
+    document.addEventListener('mouseup', handleMouseUp)
   
     return () => {
-      document.removeEventListener('mousemove', handleMouseMoveDocument);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
+      document.removeEventListener('mousemove', handleMouseMoveDocument)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
   }, [handleMouseMoveDocument, handleMouseUp])
 
   const handleMinValueChange = () => {
     if(!isNaN(inputMinValue) && inputMinValue < maxValue) {
-      setMinValue(Number(inputMinValue));
-      setEditingMin(false);
+      setMinValue(Number(inputMinValue))
+      setEditingMin(false)
       setRange((prevRange) => ({
         ...prevRange,
         min: inputMinValue > prevRange.min ? inputMinValue : prevRange.min,
         max: inputMinValue > prevRange.max ? inputMinValue : prevRange.max
-      }));
+      }))
     }
     else {
-      setWrongInputAlertVisible(true);
-      setTimeout(() => setWrongInputAlertVisible(false), 3000);
+      setWrongInputAlertVisible(true)
+      setTimeout(() => setWrongInputAlertVisible(false), 3000)
     }
   }
 
   const handleMaxValueChange = () => {
     if(!isNaN(inputMaxValue) && inputMaxValue > minValue) {
-      setMaxValue(Number(inputMaxValue));
-      setEditingMax(false);
+      setMaxValue(Number(inputMaxValue))
+      setEditingMax(false)
       setRange((prevRange) => ({
         ...prevRange,
         min: inputMaxValue < prevRange.min ? inputMaxValue : prevRange.min,
         max: inputMaxValue < prevRange.max ? inputMaxValue : prevRange.max
-      }));
+      }))
     }
     else {
-      setWrongInputAlertVisible(true);
-      setTimeout(() => setWrongInputAlertVisible(false), 3000);
+      setWrongInputAlertVisible(true)
+      setTimeout(() => setWrongInputAlertVisible(false), 3000)
     }
   }
 
-  const [overlap, setOverlap] = useState(false);
   useEffect(() => {
-    const threshold = (maxValue - minValue) * 0.15;
+    onRangeChange(range.min, range.max)
+  }, [range, onRangeChange])
+
+  const [overlap, setOverlap] = useState(false)
+  useEffect(() => {
+    const threshold = (maxValue - minValue) * 0.15
     if (Math.abs(range.min - range.max) < threshold) {
-      setOverlap(true);
+      setOverlap(true)
     } 
     else {
-      setOverlap(false);
+      setOverlap(false)
     }
   }, [range])
 
@@ -150,8 +155,8 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
             onBlur={handleMinValueChange}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                e.preventDefault();
-                handleMinValueChange();
+                e.preventDefault()
+                handleMinValueChange()
               }
             }}
           />
@@ -166,7 +171,7 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
               }}
             data-testid="min-value-text"
             >
-            {minValue !== undefined ? minValue.toFixed(2) : "NaN"} €
+            {minValue !== undefined ? minValue.toFixed(2) : "NaN"} B
           </div>
         )}
         <div
@@ -211,8 +216,8 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
               transition: 'width 0.2s, height 0.2s, top 0.2s',
             }}
             onMouseDown={(e) => {
-              e.preventDefault();
-              setDragging('min');
+              e.preventDefault()
+              setDragging('min')
             }}
             onMouseEnter={() => setHover('min')}
             onMouseLeave={() => setHover(null)}
@@ -233,8 +238,8 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
               transition: 'width 0.2s, height 0.2s, top 0.2s',
             }}
             onMouseDown={(e) => {
-              e.preventDefault();
-              setDragging('max');
+              e.preventDefault()
+              setDragging('max')
             }}
             onMouseEnter={() => setHover('max')}
             onMouseLeave={() => setHover(null)}
@@ -251,7 +256,7 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
             cursor: dragging ==='min' || dragging === 'max' ? 'col-resize' : 'default'
             }}
           >
-            {range.min !== undefined ? range.min.toFixed(2) : "NaN"} €
+            {range.min !== undefined ? range.min.toFixed(2) : "NaN"} B
           </div>
           <div 
             style={{ 
@@ -263,7 +268,7 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
               cursor: dragging ==='min' || dragging === 'max' ? 'col-resize' : 'default'
             }}
           >
-            {range.max !== undefined ? range.max.toFixed(2) : "NaN"} €
+            {range.max !== undefined ? range.max.toFixed(2) : "NaN"} B
           </div>
         </div>
         {editingMax ? (
@@ -276,8 +281,8 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
             onBlur={handleMaxValueChange}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                e.preventDefault();
-                handleMaxValueChange();
+                e.preventDefault()
+                handleMaxValueChange()
               }
             }}
           />
@@ -293,11 +298,10 @@ const Range: React.FC<RangeProps> = ({ min, max }) => {
               }}
               data-testid="max-value-text"
             >
-              {maxValue !== undefined ? maxValue.toFixed(2) : "NaN"} €
+              {maxValue !== undefined ? maxValue.toFixed(2) : "NaN"} B
           </div>
         )}
       </div>
-     {min} {max}
     </>
   )
 }
