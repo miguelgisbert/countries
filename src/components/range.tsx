@@ -5,9 +5,10 @@ interface RangeProps {
   min: number
   max: number
   onRangeChange: (min: number, max: number) => void
+  type: "M" | "B"
 }
 
-const Range: React.FC<RangeProps> = ({ min, max, onRangeChange }) => {
+const Range: React.FC<RangeProps> = ({ min, max, onRangeChange, type }) => {
   const [range, setRange] = useState({ min: min, max: max })
   const [dragging, setDragging] = useState<'min' | 'max' | null>(null)
   const rangeRef = useRef<HTMLDivElement>(null)
@@ -171,7 +172,7 @@ const Range: React.FC<RangeProps> = ({ min, max, onRangeChange }) => {
               }}
             data-testid="min-value-text"
             >
-            {minValue !== undefined ? minValue.toFixed(2) : "NaN"} B
+            {minValue !== undefined ? minValue.toFixed(2) : "NaN"} {type}
           </div>
         )}
         <div
@@ -193,7 +194,7 @@ const Range: React.FC<RangeProps> = ({ min, max, onRangeChange }) => {
             style={{
               position: 'absolute',
               background: 'dodgerblue',
-              boxShadow: '0px 0px 5px 1px rgba(0, 0, 0, 0.8)',
+              boxShadow: '0px 0px 3px 1px rgba(0, 0, 0, 0.5)',
               height: '100%', 
               cursor: dragging ==='min' || dragging === 'max' ? 'col-resize' : 'default',
               left: `${getPercentage(range.min)}%`,
@@ -209,7 +210,7 @@ const Range: React.FC<RangeProps> = ({ min, max, onRangeChange }) => {
               background: 'white',
               borderRadius: '50%',
               cursor: dragging ==='min' || dragging === 'max' ? 'col-resize' : 'pointer',
-              boxShadow: '0px 0px 8px 4px rgba(0, 0, 0, 0.8)',
+              boxShadow: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)',
               left: `${getPercentage(range.min)}%`,
               marginLeft: '-10px',
               zIndex: maxValue - range.min < (maxValue - minValue) * 0.1 ? 10 : 0,
@@ -231,7 +232,7 @@ const Range: React.FC<RangeProps> = ({ min, max, onRangeChange }) => {
               background: 'white',
               borderRadius: '50%',
               cursor: dragging ==='min' || dragging === 'max' ? 'col-resize' : 'pointer',
-              boxShadow: '0px 0px 8px 4px rgba(0, 0, 0, 0.8)',
+              boxShadow: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)',
               left: `${getPercentage(range.max)}%`,
               marginLeft: '-10px',
               zIndex: range.min - minValue < (maxValue - minValue) * 0.1 ? 10 : 0,
@@ -256,7 +257,7 @@ const Range: React.FC<RangeProps> = ({ min, max, onRangeChange }) => {
             cursor: dragging ==='min' || dragging === 'max' ? 'col-resize' : 'default'
             }}
           >
-            {range.min !== undefined ? range.min.toFixed(2) : "NaN"} B
+            {range.min !== undefined ? range.min.toFixed(2) : "NaN"} {type}
           </div>
           <div 
             style={{ 
@@ -268,7 +269,7 @@ const Range: React.FC<RangeProps> = ({ min, max, onRangeChange }) => {
               cursor: dragging ==='min' || dragging === 'max' ? 'col-resize' : 'default'
             }}
           >
-            {range.max !== undefined ? range.max.toFixed(2) : "NaN"} B
+            {range.max !== undefined ? range.max.toFixed(2) : "NaN"} {type}
           </div>
         </div>
         {editingMax ? (
@@ -298,7 +299,7 @@ const Range: React.FC<RangeProps> = ({ min, max, onRangeChange }) => {
               }}
               data-testid="max-value-text"
             >
-              {maxValue !== undefined ? maxValue.toFixed(2) : "NaN"} B
+              {maxValue !== undefined ? maxValue.toFixed(2) : "NaN"} {type}
           </div>
         )}
       </div>

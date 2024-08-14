@@ -115,7 +115,7 @@ const Continents: React.FC = () => {
   return (
     <div>
       <h1>Population by Continent</h1>
-      <Range min={minRange} max={maxRange} onRangeChange={handleRangeChange} />
+      <Range min={minRange} max={maxRange} onRangeChange={handleRangeChange} type={"B"} />
       <Bar 
         data={data} 
         options={options} 
